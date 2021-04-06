@@ -158,8 +158,10 @@
                     if (intersects({x: banana._x, y: banana._y, r: 30}, {x: balloons[k]._x, y: balloons[k]._y, width: 35, height: 48})) {
                         balloons[k]._pop();
                         banana._hitpoints--;
-                        if (banana._hitpoints < 1)
+                        if (banana._hitpoints < 1) {
                             banana._destroy();
+                            break;
+                        }
                     }
                 }
                 if (banana._x < -60 || banana._y < -60 || banana._x > window.innerWidth+60 || banana._y > window.innerHeight+60) {
