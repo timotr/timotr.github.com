@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #player {
+            width: 48px;
+            height: 48px;
+            background-color: rgb(56, 201, 12);
+            border: 6px solid rgb(44, 158, 9);
+            border-radius: 100%;
+            transform: translate(-50%, -50%);
+        }
+        .food {
+            border-radius: 100%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        * {
+            position: absolute;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="room">
+        <div id="player"></div>
+    </div>
+    <script>
+        const colors = ["#FFB3BA","#FFDFBA","#FFFFBA","#BAFFC9","#BAE1FF","#FFC6FF"]
+        const roomSize = 20000
+        let room = document.querySelector("#room")
+        room.style.width = roomSize+"px"
+        room.style.height = roomSize+"px"
+
+        let allFood = []
+        // TODO chuck food into groups
+        // TODO fix mouse + viewport
+        
+        let player = document.querySelector("#player")
+        let playerX = getRandomInt(200,roomSize-200);
+        let playerY = getRandomInt(200,roomSize-200);
+        let playerRadius = 24
+        let speed = 8;
+        let mouseX = 0;
+        let mouseY = 0;
+
+        window.addEventListener("mousemove", (event) => {
+            // console.log(event)
+            screenMouseX = event.clientX
+            screenMouseY = event.clientY
+        })
+
+        function update() {
+            // convert mouse position to window scroll position
+            let mouseX = screenMouseX + window.scrollX
+            let mouseY = screenMouseY + window.scrollY
+
+            let distance = distanceBetween(playerX, playerY, mouseX, mouseY)
+            let angle = Math.atan2(mouseY-playerY, mouseX-playerX)
+
+            //console.log(playerX, playerY, mouseX, mouseY, distance, angle)
+            let slowDown = distance < 100 ? distance / 100 : 1
+            playerX += speed * Math.cos(angle) * slowDown;
+            playerY += speed * Math.sin(angle) * slowDown;
+            window.scrollTo(
+                playerX - window.innerWidth/2,
+                playerY - window.innerHeight/2
+            )
+
+            // Check if we are on the food
+            for (let i = 0; i < allFood.length; i++) {
+                const food = allFood[i];
+                //console.log(food.x, food.y, distanceBetween(playerX, playerY, food.x, food.y))
+                if (distanceBetween(playerX, playerY, food.x, food.y) < playerRadius) {
+                    food.remove() // remove from HTML
+                    allFood.splice(i, 1) // remove from array
+                    i--
+                    playerRadius += food.size / playerRadius * 4
+                }
+            }
+        }
+
+        function render(lagOffset) {
+            player.style.left = playerX+"px"
+            player.style.top = playerY+"px"
+            player.style.width = (playerRadius*2)+"px"
+            player.style.height = (playerRadius*2)+"px"
+        }
+
+        
+        function createFood(x,y) {
+            let food = document.createElement('div')
+            let size = getRandomInt(12, 19)
+            food.className = "food"
+            food.style.height = (size*2)+"px"
+            food.style.width = (size*2)+"px"
+            food.style.backgroundColor = getRandomElement(colors)
+            food.style.left = x+"px"
+            food.style.top = y+"px"
+            food.x = x
+            food.y = y
+            food.size = size
+            allFood.push(food)
+            room.append(food)
+        }
+
+        function spawnFood() {
+            for (let i = 0; i < 10000; i++) {
+                createFood(getRandomNumber(0,roomSize), getRandomNumber(0,roomSize))
+            }
+        }
+        spawnFood()
+
+        function distanceBetween(x1,y1,x2,y2) {
+            return Math.sqrt( Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2) )
+        }
+
+        function getRandomNumber(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min) + min);
+        }
+        function getRandomElement(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        //Set the frame rate
+        var fps = 60,
+        //Get the start time
+        start = Date.now(),
+        //Set the frame duration in milliseconds
+        frameDuration = 1000 / fps,
+        //Initialize the lag offset
+        lag = 0;
+
+        //Start the game loop
+        gameLoop();
+
+        function gameLoop() {
+            requestAnimationFrame(gameLoop);
+
+            //Calcuate the time that has elapsed since the last frame
+            var current = Date.now(),
+                elapsed = current - start;
+            start = current;
+            //Add the elapsed time to the lag counter
+            lag += elapsed;
+
+            //Update the frame if the lag counter is greater than or
+            //equal to the frame duration
+            while (lag >= frameDuration) {
+                //Update the logic
+                update();
+                //Reduce the lag counter by the frame duration
+                lag -= frameDuration;
+            }
+            //Calculate the lag offset and use it to render the sprites
+            var lagOffset = lag / frameDuration;
+            render(lagOffset);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .hide {display: none}
+        * {
+            position: fixed;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- https://t.ly/-EyYg -->
+    <img src="img/Layer 1.png" />
+    <img class="hide" src="img/Layer 2.png" />
+    <img class="farm" src="img/Layer 3.png" />
+    <img class="hide banana" src="img/Layer 4.png" />
+    <audio class="hide coins" src="coins.mp3" autoplay="false" loop="false" controls="false"></audio>
+    <audio class="hide coins" src="coins.mp3" autoplay="false" loop="false" controls="false"></audio>
+    <audio class="hide coins" src="coins.mp3" autoplay="false" loop="false" controls="false"></audio>
+    <h1 id="moneyDisplay"></h1>
+    <script>
+        let image = document.querySelector("img")
+        let farm = document.querySelector(".farm")
+        let bananas = []
+
+        let money = 200;
+        let moneyDisplay = document.querySelector("#moneyDisplay")
+        let moneySounds = [...document.querySelectorAll(".coins")]
+        moneySounds.forEach(sound => {sound.pause(); sound.loop = false})
+        let lastMoneySoundIndex = 0;
+        moneyDisplay.textContent = "$"+money
+
+        let rotation = 0
+        function update() {
+            rotation += 1
+
+            // Update bananas
+            for (let i = 0; i < bananas.length; i++) {
+                const banana = bananas[i];
+                banana.health -= 1;
+                if (banana.health < 0) {
+                    banana.remove() // remove from HTML document
+                    bananas.splice(i, 1) // remove from bananas array
+                    i--
+                }
+                banana.updateBanana()
+            }
+        }
+
+        function render(lagOffset) {
+            image.style = `left: 300px; top: 50px; transform: rotate(${rotation}deg);`
+        }
+
+        function createBanana() {
+            let newBanana = document.querySelector(".hide.banana").cloneNode();
+            newBanana.classList.remove("hide")
+
+            let farmPos = farm.getBoundingClientRect();
+
+            newBanana.bananaX = getRandomNumber( farmPos.left+5, farmPos.right-30 )
+            newBanana.bananaY = getRandomNumber( farmPos.top+70, farmPos.bottom-40 )
+            newBanana.health = 600;
+            newBanana.rotation = Math.random() * 360;
+            newBanana.updateBanana = function() {
+                this.style = `left: ${this.bananaX}px; top: ${this.bananaY}px; transform: rotate(${this.rotation}deg); opacity: ${this.health/300}`
+            }
+            newBanana.addEventListener("mouseover", () => {
+                addMoney(4)
+                newBanana.remove() // remove from HTML document
+                bananas.splice(bananas.indexOf(newBanana), 1) // remove from bananas array
+            })
+            newBanana.updateBanana()
+            bananas.push(newBanana)
+            
+            document.body.append(newBanana)
+        }
+
+        setInterval(createBanana, getRandomInt(1500, 3500))
+
+
+        function getRandomNumber(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min) + min);
+        }
+        function addMoney(amount) {
+            money += amount
+            moneyDisplay.textContent = "$"+money
+
+            lastMoneySoundIndex++;
+            lastMoneySoundIndex %= moneySounds.length;
+            moneySounds[lastMoneySoundIndex].pause()
+            moneySounds[lastMoneySoundIndex].load()
+            moneySounds[lastMoneySoundIndex].play()
+        }
+
+
+        //Set the frame rate
+        var fps = 60,
+        //Get the start time
+        start = Date.now(),
+        //Set the frame duration in milliseconds
+        frameDuration = 1000 / fps,
+        //Initialize the lag offset
+        lag = 0;
+
+        //Start the game loop
+        gameLoop();
+
+        function gameLoop() {
+            requestAnimationFrame(gameLoop);
+
+            //Calcuate the time that has elapsed since the last frame
+            var current = Date.now(),
+                elapsed = current - start;
+            start = current;
+            //Add the elapsed time to the lag counter
+            lag += elapsed;
+
+            //Update the frame if the lag counter is greater than or
+            //equal to the frame duration
+            while (lag >= frameDuration) {
+                //Update the logic
+                update();
+                //Reduce the lag counter by the frame duration
+                lag -= frameDuration;
+            }
+            //Calculate the lag offset and use it to render the sprites
+            var lagOffset = lag / frameDuration;
+            render(lagOffset);
+        }
+    </script>
+</body>
+
+</html>

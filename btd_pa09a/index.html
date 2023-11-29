@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimmiManki</title>
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+    <div id="scene"></div>
+    <div>
+        <div>$<span id="score">0</span></div>
+        <div>X <span id="mx">0</span></div>
+        <div>Y <span id="my">0</span></div>
+        <div>Banana hitpoints <input type="number" id="bhit" value="1" /></div>
+        <div>Click anywhere to allow sounds</div>
+    </div>
+
+    <svg class="balloonTemplate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 11.94 16.22">
+        <path d="M4,15.74l-.13-.05c-.27-.11-.3-.14-.17-.4s.41-.72.62-1.08.09-.4-.16-.49A6,6,0,0,1,.55,10a7.8,7.8,0,0,1,.8-7.28A5.7,5.7,0,0,1,4.74.19,5.11,5.11,0,0,1,10,1.76a7.1,7.1,0,0,1,1.93,4.88,7.67,7.67,0,0,1-1.73,5.22,5.79,5.79,0,0,1-3.4,2.08c-.28.05-.35.21-.24.49.19.44.37.89.55,1.34,0,.06,0,.14.07.21s0,.24-.17.24-.78-.09-1.47-.19S4.16,15.79,4,15.74ZM10.2,6.56c0,.08,0,.23,0,.38a.4.4,0,0,0,.51.43.47.47,0,0,0,.42-.46,5.72,5.72,0,0,0-.69-3.24,8.42,8.42,0,0,0-.56-.9.49.49,0,0,0-.69-.1c-.23.16-.25.36-.06.63l.05.08A5.5,5.5,0,0,1,10.2,6.56Z"/>
+    </svg>
+
+    <svg id="popTemplate" version="1.0" xmlns="http://www.w3.org/2000/svg"
+        width="1144.000000pt" height="1280.000000pt" viewBox="0 0 1144.000000 1280.000000"
+        preserveAspectRatio="xMidYMid meet">
+        <metadata>
+        Created by potrace 1.15, written by Peter Selinger 2001-2017
+        </metadata>
+        <g transform="translate(0.000000,1280.000000) scale(0.100000,-0.100000)"
+        fill="#000000" stroke="none">
+        <path d="M829 12748 c35 -80 208 -473 1050 -2377 463 -1046 841 -1904 839
+        -1905 -2 -2 -149 25 -328 60 -1104 213 -2003 385 -2005 382 -1 -2 375 -619
+        836 -1373 461 -753 839 -1371 839 -1371 0 -1 -461 -606 -1025 -1345 -564 -739
+        -1025 -1347 -1025 -1350 0 -4 199 34 443 83 2948 595 2827 571 2834 565 2 -3
+        -48 -915 -112 -2028 -64 -1112 -115 -2035 -113 -2049 2 -22 213 259 1203 1611
+        660 901 1202 1638 1205 1638 3 1 392 -572 865 -1273 473 -701 862 -1272 864
+        -1271 3 4 65 519 271 2250 55 468 104 864 108 882 l7 32 1725 -799 c949 -440
+        1740 -807 1759 -815 33 -16 34 -16 20 1 -8 10 -560 675 -1227 1478 -667 802
+        -1211 1460 -1210 1462 2 1 296 7 653 13 1486 26 1759 30 1938 33 103 1 187 4
+        186 7 0 3 -516 339 -1146 746 -630 407 -1155 747 -1166 756 -19 14 15 59 849
+        1108 478 601 871 1097 872 1102 3 6 -28 8 -85 4 -48 -3 -225 -10 -393 -15
+        -168 -6 -435 -15 -595 -21 -159 -5 -587 -20 -950 -33 -363 -13 -661 -23 -663
+        -21 -1 1 361 753 804 1671 444 918 826 1711 851 1763 l43 93 -62 -53 c-2125
+        -1842 -3084 -2666 -3089 -2656 -4 7 -87 217 -184 467 -349 897 -795 2040 -892
+        2289 l-57 144 -42 -149 c-23 -82 -122 -432 -219 -779 -97 -346 -222 -790 -276
+        -985 -55 -195 -137 -485 -181 -645 -45 -159 -84 -293 -87 -297 -4 -4 -892 672
+        -1975 1502 -1082 831 -1969 1510 -1971 1510 -3 0 4 -19 14 -42z"/>
+        </g>
+    </svg>
+
+
+    <img id="pick" src="manki_pick.png" alt="" />
+    <img id="throw" src="manki_throw.png" alt="" />
+    <img id="bananaTemplate" src="banana.png" alt="" />
+
+    <script>
+        const balloons = [];
+        const bananas = [];
+        const popSounds = [
+            new Audio('sounds/pop1.mp3'),
+            new Audio('sounds/pop2.mp3'),
+            new Audio('sounds/pop3.mp3'),
+            new Audio('sounds/pop1.mp3'),
+            new Audio('sounds/pop2.mp3'),
+            new Audio('sounds/pop3.mp3'),
+        ];
+        const balloonTemplate = document.querySelector(".balloonTemplate");
+        const bananaTemplate = document.querySelector("#bananaTemplate");
+        const monkeySprites = [document.querySelector("#pick"), document.querySelector("#throw")];
+        const setMonkySprite = (spriteIndex)=>{
+            monkeySprites.forEach(s => s.style.display = "none");
+            monkeySprites[spriteIndex].style.display = "block";
+        }
+        const scoreDom = document.querySelector("#score");
+        const mxDom = document.querySelector("#mx");
+        const myDom = document.querySelector("#my");
+        const scene = document.querySelector("#scene");
+        let score = 0;
+        let mousePos = {x:0, y:0};
+
+        setInterval(createBalloon.bind(null, -50, 200), 650);
+        setInterval(() => {
+            createBanana(window.innerWidth-174, window.innerHeight-127, mousePos.x, mousePos.y);
+        }, 350);
+
+        const balloonLvlColor = ["red","blue","green"];
+        const balloonLvlSpeed = [0.12,0.16,0.20];
+        function createBalloon(x,y,lvl) {
+            let balloon = balloonTemplate.cloneNode(true);
+            balloon._lvl = typeof lvl === "undefined" ? randomInt(0,2) : lvl;
+            balloon.className.baseVal = "balloon "+balloonLvlColor[balloon._lvl];
+            balloon._speed = balloonLvlSpeed[balloon._lvl];
+            balloon._x = x;
+            balloon._y = y;
+            balloon.style.left = balloon._x+"px";
+            balloon.style.top = balloon._y+"px";
+            balloon._swivelOffsetModifier = randomInt(60,160)
+            balloon._swivelPeriodModifier = randomInt(60,160)
+            balloon._swivelAmplitudeModifier = randomInt(30,100)
+
+            balloon._pop = function() {
+                popSounds[randomInt(0,popSounds.length-1)].play();
+                score += balloon._lvl+1;
+                scoreDom.textContent = score;
+                balloon._destroy();
+                if (balloon._lvl > 0)
+                    createBalloon(balloon._x, balloon._y, balloon._lvl-1);
+            }
+            balloon._destroy = function() {
+                createPop(balloon._x, balloon._y);
+                balloon.remove(); // remove HTML element from scene
+                removeFromArray(balloons, balloon);
+            }
+            balloon._move = function(delta) {
+                balloon._x += delta * balloon._speed;
+                balloon._y += delta * Math.sin((balloon._x-balloon._swivelOffsetModifier)/balloon._swivelPeriodModifier)/balloon._swivelAmplitudeModifier;
+                balloon.style.left = balloon._x + "px";
+                balloon.style.top = balloon._y + "px";
+                if (balloon._x > window.innerWidth+100) {
+                    balloon._destroy();
+                }
+            }
+            //balloon.addEventListener('mouseover', balloon._pop);
+
+            scene.append(balloon);
+            balloons.push(balloon);
+        }
+
+        function createBanana(x,y,targetX,targetY) {
+            let banana = bananaTemplate.cloneNode();
+            banana._speed = 1.0;
+            banana._rot = 0;
+            banana._rotSpeed = Math.random()*4-2;
+            banana._movementAngle = Math.atan2(targetY-y, targetX-x);
+            banana.style.display = "block";
+            banana._x = x;
+            banana._y = y;
+            banana._hitpoints = parseInt(document.querySelector("#bhit").value);
+            banana.style.left = banana._x+"px";
+            banana.style.top = banana._y+"px";
+            banana.style.transform = "translate(-50%, -50%) scale(0.3) rotate(0deg)";
+            banana._destroy = function() {
+                banana.remove(); // remove HTML element from scene
+                removeFromArray(bananas, banana);
+            }
+            banana._move = function(delta) {
+                banana._x += Math.cos(banana._movementAngle) * delta * banana._speed;
+                banana._y += Math.sin(banana._movementAngle) * delta * banana._speed;
+                banana._rot += delta * banana._rotSpeed;
+                if (banana._rot > 360)
+                    banana._rot -= 360;
+                if (banana._rot < -360)
+                    banana._rot += 360;
+                banana.style.left = banana._x + "px";
+                banana.style.top = banana._y + "px";
+                banana.style.transform = `translate(-50%, -50%) scale(0.3) rotate(${banana._rot}deg)`;
+                for (let k in balloons) {
+                    if (intersects({x: banana._x, y: banana._y, r: 30}, {x: balloons[k]._x, y: balloons[k]._y, width: 35, height: 48})) {
+                        balloons[k]._pop();
+                        banana._hitpoints--;
+                        if (banana._hitpoints < 1) {
+                            banana._destroy();
+                            break;
+                        }
+                    }
+                }
+                if (banana._x < -60 || banana._y < -60 || banana._x > window.innerWidth+60 || banana._y > window.innerHeight+60) {
+                    banana._destroy();
+                }
+            }
+
+            setMonkySprite(1);
+            setTimeout(setMonkySprite.bind(null, 0), 100);
+            scene.append(banana);
+            bananas.push(banana);
+        }
+
+        function createPop(x,y) {
+            const pop = document.querySelector("#popTemplate").cloneNode(true);
+            pop.style.left = x+"px";
+            pop.style.top = y+"px";
+            pop.style.display = "block";
+            pop.style.transform = "translate(-22.1%, -49.1%) rotate("+(Math.random()*360)+"deg)";
+            scene.append(pop);
+            setTimeout(() => {pop.remove()}, 50)
+        }
+
+        let frameRate = 1000/60;
+        let lastFrame = 0;
+        let startTime = performance.now();
+        function renderLoop() {
+            //#region Calculate delta
+            let deltaTime = 0
+            const currentFrame = Math.round((performance.now() - startTime) / frameRate);
+            deltaTime = (currentFrame - lastFrame) * frameRate;
+            lastFrame = currentFrame;
+            //#endregion
+            
+            for(let k in balloons) {
+                balloons[k]._move(deltaTime);
+            }
+            for(let k in bananas) {
+                bananas[k]._move(deltaTime);
+            }
+
+            requestAnimationFrame(renderLoop);
+        }
+        renderLoop();
+
+        window.addEventListener("mousemove", (e) => {
+            mousePos.x = event.clientX;
+            mousePos.y = event.clientY;
+            mxDom.textContent = mousePos.x;
+            myDom.textContent = mousePos.y;
+        });
+
+        function intersects(circle, rect)
+        {
+            let circleDistance = {
+                x: Math.abs(circle.x - rect.x),
+                y: Math.abs(circle.y - rect.y)
+            };
+
+            if (circleDistance.x > (rect.width/2 + circle.r)) { return false; }
+            if (circleDistance.y > (rect.height/2 + circle.r)) { return false; }
+
+            if (circleDistance.x <= (rect.width/2)) { return true; } 
+            if (circleDistance.y <= (rect.height/2)) { return true; }
+
+            let cornerDistance_sq = (circleDistance.x - rect.width/2)**2 +
+                                (circleDistance.y - rect.height/2)**2;
+
+            return (cornerDistance_sq <= (circle.r**2));
+        }
+
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function removeFromArray(arr) {
+            let what, a = arguments, L = a.length, ax;
+            while (L > 1 && arr.length) {
+                what = a[--L];
+                while ((ax= arr.indexOf(what)) !== -1) {
+                    arr.splice(ax, 1);
+                }
+            }
+            return arr;
+        }
+    </script>
+</body>
+</html>
