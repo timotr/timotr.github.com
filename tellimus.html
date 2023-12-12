@@ -102,6 +102,10 @@
             tellimus.rows.push(getRandomProduct());
         }
         outputDOM.innerHTML = JSON.stringify(tellimus, null, 2);
+
+        document.addEventListener("visibilitychange", (event) => {
+            window.location.reload();
+        });
     </script>
 </body>
 
