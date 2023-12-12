@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order</title>
+</head>
+
+<body>
+    <pre></pre>
+    <script>
+        let outputDOM = document.querySelector('pre');
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min)) + min;
+        }
+
+        function getRandomFloat(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function getRandomDate() {
+            let start = new Date(2021, 0, 1);
+            let end = new Date();
+            return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+        }
+
+        function getRandomName() {
+            let firstNames = ["Kalle", "Malle", "Mari", "Kati", "Jüri"]
+            let lastNames = ["Tali", "Mets", "Kivi", "Kask", "Kuusk"]
+            return firstNames[getRandomInt(0, firstNames.length)] + " " + lastNames[getRandomInt(0, lastNames.length)];
+        }
+
+        function getRandomDeliveryType() {
+            let deliveryTypes = ["Omniva pakiautomaat", "Omniva kuller", "DHL kuller", "DPD kuller", "Itella kuller", "Itella smartpost", "Venipak kuller", "Venipak smartpost"]
+            return deliveryTypes[getRandomInt(0, deliveryTypes.length)];
+        }
+
+        function getRandomLetter() {
+            let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            return letters[getRandomInt(0, letters.length)];
+        }
+
+        function getRandomProductCode() {
+            let pattern = getRandomInt(0, 3);
+            switch (pattern) {
+                case 0:
+                    return getRandomInt(1, 999999);
+                case 1:
+                    return getRandomLetter() + getRandomLetter() + getRandomInt(1, 999999);
+                case 2:
+                    return getRandomInt(1, 999999) + getRandomLetter() + getRandomLetter();
+                case 3:
+                    return getRandomLetter() + getRandomInt(1, 999).toString().padStart(3, '0') + "-" + getRandomInt(1, 999).toString().padStart(3, '0');
+            }
+        }
+
+        function getRandomProductName() {
+            // let brands = ["De'Longhi", "Nescafe", "Bosch", "Siemens", "Braun", "Philips", "Tassimo", "Brevil"];
+            let products = ["Kohvimasin", "Kohvikapslid", "Kohviveski", "Kohvifilter", "Kohivoad", "Filtrikohv"];
+            let productBrands = {
+                "Kohvimasin": ["De'Longhi", "Bosch", "Siemens", "Braun", "Philips", "Tassimo", "Brevil"],
+                "Kohvikapslid": ["Nescafe", "Tassimo", "Lavazza", "Dolce Gusto", "Jacobs", "L'Or", "Illy", "Caffe Vergnano", "Caffe Bonini", "Caffe Poli", "Caffe Molinari", "Caffe Carraro", "Caffe Mauro", "Caffe Borbone", "Caffe Musetti", "Caffe Passalacqua", "Caffe Martella", "Caffe Diemme", "Caffe Barbera", "Caffe Vergnano", "Caffe Corsini", "Caffe New York"],
+                "Kohviveski": ["De'Longhi", "Bosch", "Siemens", "Braun", "Philips", "Tassimo", "Brevil"],
+                "Kohvifilter": ["De'Longhi", "Tassimo", "Brevil", "Aldi", "Audi"],
+                "Kohivoad": ["Nescafe", "Tassimo", "Lavazza", "Dolce Gusto", "Jacobs", "L'Or", "Illy", "Caffe Vergnano", "Caffe Bonini", "Caffe Poli", "Caffe Molinari", "Caffe Carraro", "Caffe Mauro", "Caffe Borbone", "Caffe Musetti", "Caffe Passalacqua", "Caffe Martella", "Caffe Diemme", "Caffe Barbera", "Caffe Vergnano", "Caffe Corsini", "Caffe New York"],
+                "Filtrikohv": ["Nescafe", "Tassimo", "Lavazza", "Dolce Gusto", "Jacobs", "L'Or", "Illy", "Caffe Vergnano", "Caffe Bonini", "Caffe Poli", "Caffe Molinari", "Caffe Carraro", "Caffe Mauro", "Caffe Borbone", "Caffe Musetti", "Caffe Passalacqua", "Caffe Martella", "Caffe Diemme", "Caffe Barbera", "Caffe Vergnano", "Caffe Corsini", "Caffe New York"],
+            }
+            let coffeeTypes = ["Latte", "Espresso", "Cappuccino", "Americano", "Mocha", "Macchiato", "Ristretto", "Lungo", "Flat White", "Cortado", "Affogato", "Irish", "Cubano", "Cortadito", "Cafe au lait", "Cafe Bombon", "Cafe con leche", "Cafe con hielo", "Cafe de olla", "Cafe del Tiempo", "Cafe miel", "Cafe mocha", "Cafe Touba", "Cafe Zorro", "Caffee Medici", "Cafe crema", "Cafe com Cheirinho", "Cafe com Pinga", "Cafe com Leite"];
+            let productCode = (getRandomInt(1, 9)*100*(getRandomInt(1, 10)))+getRandomLetter();
+            return getRandomArrayElement(productBrands[getRandomArrayElement(products)]) + " " + getRandomArrayElement(coffeeTypes) + " " + productCode;
+        }
+
+        function getRandomArrayElement(array) {
+            return array[getRandomInt(0, array.length)];
+        }
+
+        function getRandomProduct() {
+            return {
+                "articleId": getRandomInt(1, 99999),
+                "name": getRandomProductName(),
+                "productCode": getRandomProductCode(),
+                "price": parseFloat(getRandomFloat(1, 14).toFixed(2)),
+                "amount": getRandomInt(1, 4),
+                "vat": getRandomArrayElement([0.22, 0.22, 0.22, 0.22, 0.22, 0.22, 0.22, 0.22, 0.22, 0.09, 0.06])
+            }
+        }
+
+        let createdAt = getRandomDate();
+        let tellimus = {
+            "id": getRandomInt(1, 1000000),
+            "orderNumber": "E" + createdAt.toISOString().slice(0, 10).replace(/-/g, "") + (getRandomInt(1, 999).toString().padStart(3, '0')),
+            "createdAt": createdAt.toISOString().slice(0, 10) + " " + createdAt.toISOString().slice(11, 19),
+            "clientName": getRandomName(),
+            "deliveryType": getRandomDeliveryType(),
+            "deliveryId": getRandomInt(1, 400),
+            "rows": []
+        }
+        // generate 3-5 products
+        for (let i = 0; i < getRandomInt(3, 6); i++) {
+            tellimus.rows.push(getRandomProduct());
+        }
+        outputDOM.innerHTML = JSON.stringify(tellimus, null, 2);
+    </script>
+</body>
+
+</html>
