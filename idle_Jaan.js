@@ -50,10 +50,11 @@ function orderTaxi() {
         }
         money -= 10000
     } else console.log("sul on vaja 10k raha")
+}
+
 
     window.sellFish = sellFish
     window.buyFisherman = buyFisherman
     window.buyBoat = buyBoat
     window.orderTaxi = orderTaxi
-}
 })()
